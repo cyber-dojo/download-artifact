@@ -21,4 +21,4 @@ runs:
     - name: Load image
       shell: bash
       run:
-        cat ${{ runner.temp }}/${{ inputs.IMAGE_DIGEST }}.tar | docker import - ${{ inputs.IMAGE_NAME }}
+        docker load --input ${{ runner.temp }}/${{ inputs.IMAGE_DIGEST }}.tar

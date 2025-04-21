@@ -19,5 +19,6 @@ runs:
         path: ${{ runner.temp }}
 
     - name: Load image
+      shell: bash
       run:
         cat ${{ runner.temp }}/${{ env.IMAGE_DIGEST }}.tar | docker import - ${{ env.IMAGE_NAME }}

@@ -15,10 +15,10 @@ runs:
     - name: Download artifact
       uses: actions/download-artifact@v4
       with:
-        name: ${{ env.IMAGE_DIGEST }}
+        name: ${{ inputs.IMAGE_DIGEST }}
         path: ${{ runner.temp }}
 
     - name: Load image
       shell: bash
       run:
-        cat ${{ runner.temp }}/${{ env.IMAGE_DIGEST }}.tar | docker import - ${{ env.IMAGE_NAME }}
+        cat ${{ runner.temp }}/${{ inputs.IMAGE_DIGEST }}.tar | docker import - ${{ inputs.IMAGE_NAME }}

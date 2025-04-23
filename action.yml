@@ -15,7 +15,11 @@ runs:
         name: ${{ inputs.image_digest }}
         path: ${{ runner.temp }}
 
-    - name: Load image
+    - name: Load image, verify
       shell: bash
-      run:
-        docker load --input ${{ runner.temp }}/${{ inputs.image_digest }}.tar
+      run: |
+        docker load --input ${{ runner.temp }}/${{ inputs.image_digest }}.tar | tee load.log
+        # eg load.log == 'Loaded image: cyberdojo/web:03b8aa5'
+        IMAGE_NAME="$(cut -d ' ' -f 3 load.log)
+        FINGERPRINT="$(kosli fingerprint --artifact-type=docker "${IMAGE_NAME}")
+        [ "${{ inputs.image_digest }}" == "${FINGERPRINT}" ]

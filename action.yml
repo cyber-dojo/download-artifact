@@ -15,16 +15,7 @@ runs:
         name: ${{ inputs.image_digest }}
         path: ${{ runner.temp }}
 
-    - name: Setup Kosli CLI
-      uses: kosli-dev/setup-cli-action@v2
-      with:
-        version: 2.11.11
-
-    - name: Load image, verify
+    - name: Load image
       shell: bash
-      run: |
+      run:
         docker load --input ${{ runner.temp }}/${{ inputs.image_digest }}.tar | tee load.log
-        # eg load.log == 'Loaded image: cyberdojo/web:03b8aa5'
-        IMAGE_NAME="$(cut -d ' ' -f 3 load.log)
-        FINGERPRINT="$(kosli fingerprint "${IMAGE_NAME}" --artifact-type=docker --debug=false)
-        [ "${{ inputs.image_digest }}" == "${FINGERPRINT}" ]

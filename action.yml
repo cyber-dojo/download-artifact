@@ -15,6 +15,11 @@ runs:
         name: ${{ inputs.image_digest }}
         path: ${{ runner.temp }}
 
+    - name: Setup Kosli CLI
+      uses: kosli-dev/setup-cli-action@v2
+      with:
+        version: ${{ vars.KOSLI_CLI_VERSION }}
+
     - name: Load image, verify
       shell: bash
       run: |

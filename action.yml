@@ -18,4 +18,4 @@ runs:
     - name: Load image
       shell: bash
       run:
-        docker load --input ${{ runner.temp }}/${{ inputs.image_digest }}.tar | tee load.log
+        docker load --input ${{ runner.temp }}/${{ inputs.image_digest }}.tar

@@ -1,13 +1,13 @@
 
-A "partner" composite workflow to `docker load` the docker image in a tar file created by
+A "partner" composite workflow to load the docker image created by
 [reusable-actions-workflow](https://github.com/cyber-dojo/reusable-actions-workflows)/.github/workflows/[secure-docker-build.yml](https://github.com/cyber-dojo/reusable-actions-workflows/blob/main/.github/workflows/secure-docker-build.yml)
 
 Typical use is as below. Note:
-- The image is built using cyber-dojo/reusable-actions-workflows/.github/workflows/secure-docker-build.yml@main
-- The image is downloaded using this workflow; cyber-dojo/download-artifact@main
-- In the `Do something` job(s), use this image. Do **NOT** rebuild the image
-- In the `kosli attest` commands, use the `fingerprint` returned from the `build-image` job.
-It is **not** possible to calculate the image digest using `--artifact-type`.
+- In the `build-image` job, the image is built using cyber-dojo/reusable-actions-workflows/.github/workflows/secure-docker-build.yml@main
+- In each subsequent job:
+  - Step 1: download the image using this workflow; cyber-dojo/download-artifact@main
+  - Step 2: do-something, which must use this image. It must **NOT** rebuild the image
+  - Step 3: `kosli attest` the evidence, using the `fingerprint` returned from the `build-image` job. It is **not** possible to calculate the image digest using `--artifact-type`.
 
 ```yml
 name: Main

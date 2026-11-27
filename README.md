@@ -1,9 +1,9 @@
 
 A "partner" composite workflow to load the docker image created by
-[reusable-actions-workflow](https://github.com/cyber-dojo/reusable-actions-workflows)/.github/workflows/[secure-docker-build.yml](https://github.com/cyber-dojo/reusable-actions-workflows/blob/main/.github/workflows/secure-docker-build.yml)
+[reusable-actions-workflow](https://github.com/cyber-dojo/reusable-actions-workflows)/.github/workflows/[secure-docker-build-from-bare-image.yml](https://github.com/cyber-dojo/reusable-actions-workflows/blob/main/.github/workflows/secure-docker-build-from-bare-image.yml)
 
 Typical use is as below. Note:
-- In the `build-image` job, the image is built using cyber-dojo/reusable-actions-workflows/.github/workflows/secure-docker-build.yml@main
+- In the `build-image` job, the image is built using cyber-dojo/reusable-actions-workflows/.github/workflows/secure-docker-build-from-bare-image.yml@main, FROM the bare image the `bare-image` job builds
 - In each subsequent job:
   - Step 1: download the image using this workflow; cyber-dojo/download-artifact@main
   - Step 2: do-something, which must use this image. It must **NOT** rebuild the image
@@ -18,9 +18,16 @@ jobs:
   setup:
     ...
   
+  bare-image:
+    uses: cyber-dojo/reusable-actions-workflows/.github/workflows/build-bare-image.yml@main
+    with:
+      checkout_repository: cyber-dojo/saver
+      checkout_ref: ${{ github.sha }}
+      artifact_prefix: saver-bare-image
+
   build-image:
-    needs: [setup]    
-    uses: cyber-dojo/reusable-actions-workflows/.github/workflows/secure-docker-build.yml@main
+    needs: [setup, bare-image]
+    uses: cyber-dojo/reusable-actions-workflows/.github/workflows/secure-docker-build-from-bare-image.yml@main
     with:
       checkout_repository: cyber-dojo/saver
       checkout_ref: ${{ github.sha }}
@@ -29,13 +36,17 @@ jobs:
       image_tag: ${{ needs.setup.outputs.image_tag }}
       image_build_args: |
         COMMIT_SHA=${{ github.sha }}
-        BASE_IMAGE=${{ inputs.BASE_IMAGE }}
+      bare_image_artifact_prefix: saver-bare-image
+      bare_image_digest_amd64: ${{ needs.bare-image.outputs.digest_amd64 }}
+      bare_image_digest_arm64: ${{ needs.bare-image.outputs.digest_arm64 }}
       kosli_flow: ${{ env.KOSLI_FLOW }}
       kosli_trail: ${{ env.KOSLI_TRAIL }}
       kosli_reference_name: saver
-      attest_to_kosli: ${{ github.ref == 'refs/heads/main' }}        
+      attest_to_kosli: ${{ github.ref == 'refs/heads/main' }}
     secrets:
       kosli_api_token: ${{ secrets.KOSLI_API_TOKEN }}
+      docker_user: ${{ secrets.DOCKER_USER }}
+      docker_pass: ${{ secrets.DOCKER_PASS }}
 
 
   do-something:
@@ -56,7 +67,7 @@ jobs:
           
       - name: Setup Kosli CLI
         if: ${{ github.ref == 'refs/heads/main' }}
-        uses: kosli-dev/setup-cli-action@v2
+        uses: kosli-dev/setup-cli-action@v3
         with:
           version: ${{ vars.KOSLI_CLI_VERSION }}
 
